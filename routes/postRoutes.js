@@ -1,55 +1,92 @@
 const router = require('express').Router()
-const { Post, User } = require('../models')
+const { Post, User, Comment } = require('../models')
+const passport = require('passport')
 
-
-router.get('/posts', async (req, res) => {
+//GET ALL POSTS
+//jwt means that we're going to show our badge/jwt everytime we want to get all the posts
+router.get('/posts', async(req,res)=> {
   try {
-    const postData = await Post.findAll()
-    res.status(200).json(postData);
-  } catch (err) {
-    res.status(500).json(err)
+    let posts = await Post.findAll({include:[User]})
+    res.json(posts)
+  } catch (error) {
+    res.json({error})
   }
 })
 
-router.get('/posts/:id', async (req, res) => {
+//GET ONE POST BY ID
+router.get('/posts/:id', passport.authenticate('jwt'), async (req, res) => {
   try {
-    const postData = await Post.findByPk(req.params.id)
-
-    if (!postData) {
-      res.status(404).json({ message: 'No post found with this id!' })
-      return
-    }
-
-    res.status(200).json(recipeData);
-  } catch (err) {
-    res.status(500).json(err)
+    let post = await Post.findOne({where:{id: req.params.id}, include: [User,Comment] })
+    res.json(post)
+  } catch (error) {
+    res.json({ error })
   }
 })
 
-router.post('/posts', async (req, res) => {
+
+//DELETE A POST
+router.delete('/posts/:id', passport.authenticate('jwt'), async (req, res) => {
   try {
-    const postData = await Post.create(req.body)
-    res.status(200).json(postData);
-  } catch (err) {
-    res.status(400).json(err)
+    let post = await Post.destroy({ where: { id: req.params.id }})
+    res.json({message: 'post deleted'})
+  } catch (error) {
+    res.json({ error })
   }
 })
 
-router.delete('/posts/:id', async (req, res) => {
-  try {
-    const postData = await Post.destroy({
-      where: {
-        id: req.params.id
-      }
-    })
-    if (!postData) {
-      res.status(404).json({ message: 'No Post found with this id!' })
-      return;
-    }
-    res.status(200).json(postData);
-  } catch (err) {
-    res.status(500).json(err)
-  }
-})
 
-module.exports = router
+
+//CREATE A POST
+//this autthenticate ensures that when u make a post, we want to authenticate that ur logged in and u do so by looking at local storage where the badge is stored
+router.post('/posts', passport.authenticate('jwt'), async (req, res) => {
+  try {
+    const newPost = await Post.create(
+      {
+        ...req.body, 
+        userId: req.user.id
+      });
+    res.json(newPost);
+  } catch (err) {
+    res.json(err);
+  }
+});
+
+
+
+// router.put('/:id', async (req, res) => {
+//   try {
+//     const [affectedRows] = await Post.update(req.body, {
+//       where: {
+//         id: req.params.id,
+//       },
+//     });
+
+//     if (affectedRows > 0) {
+//       res.status(200).end();
+//     } else {
+//       res.status(404).end();
+//     }
+//   } catch (err) {
+//     res.status(500).json(err);
+//   }
+// });
+
+// router.delete('/:id', async (req, res) => {
+//   try {
+//     const [affectedRows] = Post.destroy({
+//       where: {
+//         id: req.params.id,
+//       },
+//     });
+
+//     if (affectedRows > 0) {
+//       res.status(200).end();
+//     } else {
+//       res.status(404).end();
+//     }
+//   } catch (err) {
+//     res.status(500).json(err);
+//   }
+// });
+
+module.exports = router;

@@ -1,0 +1,22 @@
+
+.hero{
+  font-size: 35px;
+  font-weight: bolder;
+}
+h5{
+  font-weight: bold;
+  
+}
+
+.bigcard {
+  width: 400px;
+  margin-left: 20px;
+}
+
+#posts {
+  align-items: center;
+}
+
+#commentTime{
+  font-size: xx-small;
+}

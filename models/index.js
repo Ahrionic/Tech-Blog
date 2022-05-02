@@ -1,10 +1,29 @@
-const User = require('./User.js')
-const Post = require('./Post.js')
-// your relationships go here...
-
-User.hasMany(Post, { foreignKey: 'uid' })
-Post.belongsTo(User, { foreignKey: 'uid' })
-
-module.exports = { User, Post}
+const router = require('express').Router()
 
 
+const Post = require('./Post')
+const Comment = require('./Comment')
+const User = require('./User')
+
+
+User.hasMany(Post, {
+  foreignKey:'userId'
+})
+
+Post.belongsTo(User, {
+  foreignKey: 'userId',
+  onDelete: 'CASCADE'
+})
+
+
+
+Post.hasMany(Comment, {
+  foreignKey: 'postId',
+  onDelete: 'CASCADE'
+})
+Comment.belongsTo(Post, {
+  foreignKey: 'postId'
+})
+
+
+module.exports = {Post, Comment, User}
